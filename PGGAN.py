@@ -29,7 +29,7 @@ class PGGAN(object):
         self.z = tf.placeholder(tf.float32, [self.batch_size, self.sample_size])
         self.alpha_tra = tf.Variable(initial_value=0.0, trainable=False,name='alpha_tra')
 
-    def build_model_STGan(self):
+    def build_model_PGGan(self):
 
         self.fake_images = self.generate(self.z, pg=self.pg, t=self.trans, alpha_trans=self.alpha_tra)
 

@@ -46,7 +46,7 @@ if __name__ == "__main__":
                             sample_path=sample_path, log_dir=root_log_dir, learn_rate=GAN_learn_rate, PG= fl[i],
                             t=t)
 
-            pggan.build_model_STGan()
+            pggan.build_model_PGGan()
             pggan.train()
 
 
