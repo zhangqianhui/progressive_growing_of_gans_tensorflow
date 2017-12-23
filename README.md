@@ -2,7 +2,10 @@
 the Tensorflow implementation of [PROGRESSIVE GROWING OF GANS FOR IMPROVED QUALITY, STABILITY, AND VARIATION](https://arxiv.org/abs/1710.10196).
 
 ## The generative process of PG-GAN
-<img src="./images/figure.png" width="900px"/>
+
+<p align="center">
+  <img src="/images/figure.png">
+</p>
 
 ## Differences with the original paper.
 
@@ -32,7 +35,9 @@ python main.py --path your data-path
 ## Results
 Here is the results generated from this implementation:
 
-<img src="./images/sample.png" width="900px"/>
+<p align="center">
+  <img src="/images/sample.png">
+</p>
 
 ## Issue
  If you find the bug and problem, Thanks for your issue to propose it.
