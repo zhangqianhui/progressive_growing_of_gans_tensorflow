@@ -6,7 +6,7 @@ from utils import CelebA
 flags = tf.app.flags
 
 flags.DEFINE_integer("OPER_FLAG", 0, "the flag of opertion: 0 is for training ")
-flags.DEFINE_string("path" , '?', "the path of training data")
+flags.DEFINE_string("path" , '?', "the path of training data, for example /home/hehe/celebA/")
 flags.DEFINE_integer("batch_size", 16, "batch size")
 flags.DEFINE_integer("max_iters", 32000, "the maxmization of training number")
 flags.DEFINE_float("learn_rate", 0.0001, "the learning rate for G and D networks")
@@ -39,10 +39,6 @@ if __name__ == "__main__":
             mkdir_p(pggan_checkpoint_dir_write)
             mkdir_p(sample_path)
             pggan_checkpoint_dir_read = "./model_pggan_{}/{}/model.ckpt".format(OPER_FLAG, r_fl[i])
-
-            max_iter = max_iters / (6 - fl[i])
-
-            print "Max_iterations", max_iter
 
             pggan = PGGAN(batch_size=batch_size, max_iters=max_iters,
                             model_path=pggan_checkpoint_dir_write, read_model_path=pggan_checkpoint_dir_read,
