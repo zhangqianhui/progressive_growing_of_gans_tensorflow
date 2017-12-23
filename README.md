@@ -9,6 +9,12 @@ the Tensorflow implementation of [PROGRESSIVE GROWING OF GANS FOR IMPROVED QUALI
 
 ## Differences with the original paper.
 
+- This implement use CelebA dataset, not CelebA-HQ.
+
+- All tricks has been used, except "Equalized learning rate". You can make a PR if high-qualtiy generated samples with this technique can be achieved. Thanks for your contributions.
+
+- Recently, just generate 64x64 pixels samples. Higher-resolution results will be given right away.
+
 ## Setup
 
 ### Prerequisites
@@ -33,7 +39,7 @@ python main.py --path your data-path
 ```
 
 ## Results
-Here is the results generated from this implementation:
+Here is the generated 64x64 results of PGGAN-tensorflow(Left: generated; Right: Real):
 
 <p align="center">
   <img src="/images/sample.png">

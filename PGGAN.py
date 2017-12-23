@@ -4,8 +4,6 @@ from utils import save_images
 from utils import CelebA
 import numpy as np
 import scipy
-import os
-os.environ['CUDA_VISIBLE_DEVICES']='2'
 
 class PGGAN(object):
 
@@ -148,7 +146,7 @@ class PGGAN(object):
             summary_op = tf.summary.merge_all()
             summary_writer = tf.summary.FileWriter(self.log_dir, sess.graph)
 
-            if self.pg != 1 and self.pg != 6:
+            if self.pg != 1 and self.pg != 7:
 
                 if self.trans:
                     self.r_saver.restore(sess, self.read_model_path)

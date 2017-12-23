@@ -5,7 +5,7 @@ from PGGAN import PGGAN
 from utils import CelebA
 flags = tf.app.flags
 
-flags.DEFINE_integer("OPER_FLAG", 17, "the flag of opertion: 0 is for training ")
+flags.DEFINE_integer("OPER_FLAG", 0, "the flag of opertion: 0 is for training ")
 flags.DEFINE_string("path" , '?', "the path of training data")
 flags.DEFINE_integer("batch_size", 16, "batch size")
 flags.DEFINE_integer("max_iters", 32000, "the maxmization of training number")
@@ -26,10 +26,10 @@ if __name__ == "__main__":
     data_In = CelebA(FLAGS.path)
     print "the num of dataset", len(data_In.image_list)
 
-    if OPER_FLAG == 17:
+    if OPER_FLAG == 0:
 
-        fl = [1,2,2,3,3,4,4,5,5]
-        r_fl = [1,1,2,2,3,3,4,4,5]
+        fl = [1,2,2,3,3,4,4,5,5, 6, 6]
+        r_fl = [1,1,2,2,3,3,4,4,5, 5, 6]
 
         for i in range(FLAGS.flag):
 
