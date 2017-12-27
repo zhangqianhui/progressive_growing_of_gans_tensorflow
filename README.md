@@ -49,6 +49,7 @@ Here is the generated 128x128 results of PGGAN-tensorflow(Left: generated; Right
 <p align="center">
   <img src="/images/sample_128.png">
 </p>
+
 ## Issue
  If you find the bug and problem, Thanks for your issue to propose it.
     
