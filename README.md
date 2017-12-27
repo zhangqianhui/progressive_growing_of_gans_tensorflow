@@ -45,6 +45,10 @@ Here is the generated 64x64 results of PGGAN-tensorflow(Left: generated; Right: 
   <img src="/images/sample.png">
 </p>
 
+Here is the generated 128x128 results of PGGAN-tensorflow(Left: generated; Right: Real):
+<p align="center">
+  <img src="/images/sample_128.png">
+</p>
 ## Issue
  If you find the bug and problem, Thanks for your issue to propose it.
     
