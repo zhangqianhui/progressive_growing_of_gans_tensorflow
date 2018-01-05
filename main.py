@@ -10,7 +10,7 @@ flags.DEFINE_string("path" , '?', "the path of training data, for example /home/
 flags.DEFINE_integer("batch_size", 16, "batch size")
 flags.DEFINE_integer("max_iters", 32000, "the maxmization of training number")
 flags.DEFINE_float("learn_rate", 0.0001, "the learning rate for G and D networks")
-flags.DEFINE_float("flag", 9, "the FLAG of gan training process")
+flags.DEFINE_float("flag", 11, "the FLAG of gan training process")
 
 FLAGS = flags.FLAGS
 if __name__ == "__main__":
