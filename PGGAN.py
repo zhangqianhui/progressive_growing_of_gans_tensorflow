@@ -297,9 +297,6 @@ class PGGAN(object):
     def get_fp(self, pg):
         return max(512 / (2 **(pg - 1)), 16)
 
-    def KL_loss(self, mu, log_var):
-        return -0.5 * tf.reduce_sum(1 + log_var - tf.pow(mu, 2) - tf.exp(log_var))
-
     def sample_z(self, mu, log_var):
         eps = tf.random_normal(shape=tf.shape(mu))
         return mu + tf.exp(log_var / 2) * eps
