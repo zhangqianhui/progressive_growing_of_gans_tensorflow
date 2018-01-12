@@ -19,7 +19,7 @@ the Tensorflow implementation of [PROGRESSIVE GROWING OF GANS FOR IMPROVED QUALI
 
 ### Prerequisites
 
-- TensorFlow 1.1
+- TensorFlow >= 1.1
 - python 2.7
 
 ### Getting Started
