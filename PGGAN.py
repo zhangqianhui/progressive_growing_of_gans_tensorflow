@@ -194,16 +194,20 @@ class PGGAN(object):
                     D_loss, G_loss, D_origin_loss, alpha_tra = sess.run([self.D_loss, self.G_loss, self.D_origin_loss,self.alpha_tra], feed_dict={self.images: realbatch_array, self.z: sample_z})
                     print("PG %d, step %d: D loss=%.7f G loss=%.7f, D_or loss=%.7f, opt_alpha_tra=%.7f" % (self.pg, step, D_loss, G_loss, D_origin_loss, alpha_tra))
 
+                    realbatch_array = np.clip(realbatch_array, -1, 1)
                     save_images(realbatch_array[0:self.batch_size], [2, self.batch_size/2],
                                 '{}/{:02d}_real.png'.format(self.sample_path, step))
 
                     if self.trans and self.pg != 0:
 
+                        low_realbatch_array = np.clip(low_realbatch_array, -1, 1)
+
                         save_images(low_realbatch_array[0:self.batch_size], [2, self.batch_size / 2],
                                     '{}/{:02d}_real_lower.png'.format(self.sample_path, step))
-
+                   
                     fake_image = sess.run(self.fake_images,
                                           feed_dict={self.images: realbatch_array, self.z: sample_z})
+                    fake_image = np.clip(fake_image, -1, 1)
                     save_images(fake_image[0:self.batch_size], [2, self.batch_size/2], '{}/{:02d}_train.png'.format(self.sample_path, step))
 
                 if np.mod(step, 4000) == 0 and step != 0:

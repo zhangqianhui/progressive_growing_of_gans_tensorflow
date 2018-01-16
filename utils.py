@@ -111,7 +111,7 @@ def merge(images, size):
     return img
 
 def inverse_transform(image):
-    return ((image + 1.)*(255.99/2)).astype('int32')
+    return ((image + 1.)* 127.5).astype(np.uint8)
 
 def read_image_list(category):
 
