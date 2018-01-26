@@ -6,7 +6,7 @@ from utils import CelebA
 flags = tf.app.flags
 
 flags.DEFINE_integer("OPER_FLAG", 0, "the flag of opertion: 0 is for training ")
-flags.DEFINE_string("path" , '?', "the path of training data, for example /home/hehe/celebA/")
+flags.DEFINE_string("path" , '/home/?/data/celebA/', "the path of training data, for example /home/hehe/celebA/")
 flags.DEFINE_integer("batch_size", 16, "batch size")
 flags.DEFINE_integer("max_iters", 32000, "the maxmization of training number")
 flags.DEFINE_float("learn_rate", 0.0001, "the learning rate for G and D networks")
@@ -34,11 +34,11 @@ if __name__ == "__main__":
         for i in range(FLAGS.flag):
 
             t = False if (i % 2 == 0) else True
-            pggan_checkpoint_dir_write = "./model_pggan_{}/{}/model.ckpt".format(OPER_FLAG, fl[i])
+            pggan_checkpoint_dir_write = "./model_pggan_{}/{}/".format(OPER_FLAG, fl[i])
             sample_path = "./PGGanCeleba/{}/sample_{}_{}".format(FLAGS.OPER_FLAG, fl[i], t)
             mkdir_p(pggan_checkpoint_dir_write)
             mkdir_p(sample_path)
-            pggan_checkpoint_dir_read = "./model_pggan_{}/{}/model.ckpt".format(OPER_FLAG, r_fl[i])
+            pggan_checkpoint_dir_read = "./model_pggan_{}/{}/".format(OPER_FLAG, r_fl[i])
 
             pggan = PGGAN(batch_size=batch_size, max_iters=max_iters,
                             model_path=pggan_checkpoint_dir_write, read_model_path=pggan_checkpoint_dir_read,
