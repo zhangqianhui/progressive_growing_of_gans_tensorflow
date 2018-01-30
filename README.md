@@ -25,7 +25,7 @@ the Tensorflow implementation of [PROGRESSIVE GROWING OF GANS FOR IMPROVED QUALI
 ### Getting Started
 - Clone this repo:
 ```bash
-git clone https://github.com/zhangqianhui/PGGAN-tensorflow
+git clone https://github.com/zhangqianhui/progressive_growing_of_gans_tensorflow.git
 cd PGGAN-tensorflow
 ```
 - Download the CelebA dataset
