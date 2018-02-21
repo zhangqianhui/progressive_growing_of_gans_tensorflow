@@ -149,7 +149,7 @@ def MinibatchstateConcat(input, averaging='all'):
     if averaging == 'all':
         vals = tf.reduce_mean(vals, keep_dims=True)
     else:
-        print "nothing"
+        print ("nothing")
     vals = tf.tile(vals, multiples=[tf.shape(input)[0], 4, 4, 1])
     return tf.concat([input, vals], axis=3)
 
