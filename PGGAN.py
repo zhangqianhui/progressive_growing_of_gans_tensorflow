@@ -66,24 +66,24 @@ class PGGAN(object):
         total_para = 0
         for variable in self.d_vars:
             shape = variable.get_shape()
-            print variable.name, shape
+            print (variable.name, shape)
             variable_para = 1
             for dim in shape:
                 variable_para *= dim.value
             total_para += variable_para
-        print "The total para of D", total_para
+        print ("The total para of D", total_para)
 
         self.g_vars = [var for var in t_vars if 'gen' in var.name]
 
         total_para2 = 0
         for variable in self.g_vars:
             shape = variable.get_shape()
-            print variable.name, shape
+            print (variable.name, shape)
             variable_para = 1
             for dim in shape:
                 variable_para *= dim.value
             total_para2 += variable_para
-        print "The total para of G", total_para2
+        print ("The total para of G", total_para2)
 
         #save the variables , which remain unchanged
         self.d_vars_n = [var for var in self.d_vars if 'dis_n' in var.name]
@@ -100,21 +100,21 @@ class PGGAN(object):
         self.d_vars_n_2_rgb = [var for var in self.d_vars_n_2 if '{}'.format(self.output_size) not in var.name]
         self.g_vars_n_2_rgb = [var for var in self.g_vars_n_2 if '{}'.format(self.output_size) not in var.name]
 
-        print "d_vars", len(self.d_vars)
-        print "g_vars", len(self.g_vars)
+        print ("d_vars", len(self.d_vars))
+        print ("g_vars", len(self.g_vars))
 
-        print "self.d_vars_n_read", len(self.d_vars_n_read)
-        print "self.g_vars_n_read", len(self.g_vars_n_read)
+        print ("self.d_vars_n_read", len(self.d_vars_n_read))
+        print ("self.g_vars_n_read", len(self.g_vars_n_read))
 
-        print "d_vars_n_2_rgb", len(self.d_vars_n_2_rgb)
-        print "g_vars_n_2_rgb", len(self.g_vars_n_2_rgb)
+        print ("d_vars_n_2_rgb", len(self.d_vars_n_2_rgb))
+        print ("g_vars_n_2_rgb", len(self.g_vars_n_2_rgb))
 
         # for n in self.d_vars:
-        #     print n.name
+        #     print (n.name)
 
         self.g_d_w = [var for var in self.d_vars + self.g_vars if 'bias' not in var.name]
 
-        print "self.g_d_w", len(self.g_d_w)
+        print ("self.g_d_w", len(self.g_d_w))
 
         self.saver = tf.train.Saver(self.d_vars + self.g_vars)
         self.r_saver = tf.train.Saver(self.d_vars_n_read + self.g_vars_n_read)
@@ -215,7 +215,7 @@ class PGGAN(object):
                 step += 1
 
             save_path = self.saver.save(sess, self.gan_model_path)
-            print "Model saved in file: %s" % save_path
+            print ("Model saved in file: %s" % save_path)
 
         tf.reset_default_graph()
 
@@ -260,10 +260,10 @@ class PGGAN(object):
 
         with tf.variable_scope('generator') as scope:
 
-            de = tf.reshape(z_var, [self.batch_size, 1, 1, self.get_nf(1)])
+            de = tf.reshape(z_var, [self.batch_size, 1, 1, tf.cast(self.get_nf(1),tf.int32)])
             de = conv2d(de, output_dim= self.get_nf(1), k_h=4, k_w=4, d_w=1, d_h=1, padding='Other', name='gen_n_1_conv')
             de = Pixl_Norm(lrelu(de))
-            de = tf.reshape(de, [self.batch_size, 4, 4, self.get_nf(1)])
+            de = tf.reshape(de, [self.batch_size, 4, 4, tf.cast(self.get_nf(1),tf.int32)])
             de = conv2d(de, output_dim=self.get_nf(1), d_w=1, d_h=1, name='gen_n_2_conv')
             de = Pixl_Norm(lrelu(de))
 

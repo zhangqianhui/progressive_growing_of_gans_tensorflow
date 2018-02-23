@@ -51,7 +51,7 @@ class CelebA(object):
             self.image_list = np.array(self.image_list)
             self.image_list = self.image_list[perm]
 
-            print "images shuffle"
+            print ("images shuffle")
 
         return self.image_list[(batch_num % ro_num) * batch_size: (batch_num % ro_num + 1) * batch_size]
 

@@ -24,7 +24,7 @@ if __name__ == "__main__":
 
     OPER_FLAG = FLAGS.OPER_FLAG
     data_In = CelebA(FLAGS.path)
-    print "the num of dataset", len(data_In.image_list)
+    print ("the num of dataset", len(data_In.image_list))
 
     if OPER_FLAG == 0:
 
