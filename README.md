@@ -11,8 +11,6 @@ the Tensorflow implementation of [PROGRESSIVE GROWING OF GANS FOR IMPROVED QUALI
 
 - This implement use CelebA dataset, not CelebA-HQ.
 
-- All tricks have been used, except "Equalized learning rate". You can make a PR if high-qualtiy generated samples with this technique can be achieved. Thanks for your contributions.
-
 - Recently, just generate 64x64 and 128x128 pixels samples.
 
 ## Setup
