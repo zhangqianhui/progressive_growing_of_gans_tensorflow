@@ -18,9 +18,7 @@ class CelebA(object):
     def __init__(self, image_path):
 
         self.dataname = "CelebA"
-        self.dims = 64*64
-        self.shape = [64, 64, 3]
-        self.image_size = 64
+        self.channel = 3
         self.image_list = read_image_list(category=image_path)
 
     def load_celebA(self, image_path):
@@ -55,10 +53,10 @@ class CelebA(object):
 
         return self.image_list[(batch_num % ro_num) * batch_size: (batch_num % ro_num + 1) * batch_size]
 
-def get_image(image_path , image_size , is_crop=True, resize_w = 64 , is_grayscale = False):
+def get_image(image_path , image_size , is_crop=True, resize_w=64 , is_grayscale = False):
     return transform(imread(image_path , is_grayscale), image_size, is_crop , resize_w)
 
-def transform(image, npx= 64 , is_crop=False, resize_w= 64):
+def transform(image, npx=64 , is_crop=False, resize_w=64):
 
     # npx : # of pixels width/height of image
     if is_crop:
@@ -83,8 +81,10 @@ def center_crop(x, crop_h, crop_w=None, resize_w=64):
     if rate < 0.5:
         x = np.fliplr(x)
 
-    return scipy.misc.imresize(x[j:j+crop_h, i:i+crop_w],
+    return scipy.misc.imresize(x[j:j + crop_h, i:i + crop_w],
                                [resize_w, resize_w])
+
+        # return scipy.misc.imresize(x[20:218 - 20, 0: 178], [resize_w, resize_w])
 
     # return scipy.misc.imresize(x[45: 45 + 128, 25:25 + 128], [resize_w, resize_w])
 

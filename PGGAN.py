@@ -1,15 +1,15 @@
 import tensorflow as tf
-from ops import lrelu, conv2d, fully_connect, upscale, Pixl_Norm, avgpool2d, WScaleLayer, MinibatchstateConcat
+from ops import lrelu, conv2d, fully_connect, upscale, Pixl_Norm, downscale2d, MinibatchstateConcat
 from utils import save_images
 from utils import CelebA
 import numpy as np
-import scipy
+from scipy.ndimage.interpolation import zoom
 
 class PGGAN(object):
 
     # build model
     def __init__(self, batch_size, max_iters, model_path, read_model_path, data, sample_size, sample_path, log_dir,
-                 learn_rate, PG, t):
+                 learn_rate, lam_gp, lam_eps, PG, t, use_wscale):
 
         self.batch_size = batch_size
         self.max_iters = max_iters
@@ -20,11 +20,14 @@ class PGGAN(object):
         self.sample_path = sample_path
         self.log_dir = log_dir
         self.learning_rate = learn_rate
+        self.lam_gp = lam_gp
+        self.lam_eps = lam_eps
         self.pg = PG
         self.trans = t
         self.log_vars = []
-        self.channel = 3
+        self.channel = self.data_In.channel
         self.output_size = 4 * pow(2, PG - 1)
+        self.use_wscale = use_wscale
         self.images = tf.placeholder(tf.float32, [batch_size, self.output_size, self.output_size, self.channel])
         self.z = tf.placeholder(tf.float32, [self.batch_size, self.sample_size])
         self.alpha_tra = tf.Variable(initial_value=0.0, trainable=False,name='alpha_tra')
@@ -32,7 +35,6 @@ class PGGAN(object):
     def build_model_PGGan(self):
 
         self.fake_images = self.generate(self.z, pg=self.pg, t=self.trans, alpha_trans=self.alpha_tra)
-
         _, self.D_pro_logits = self.discriminate(self.images, reuse=False, pg = self.pg, t=self.trans, alpha_trans=self.alpha_tra)
         _, self.G_pro_logits = self.discriminate(self.fake_images, reuse=True,pg= self.pg, t=self.trans, alpha_trans=self.alpha_tra)
 
@@ -53,9 +55,8 @@ class PGGAN(object):
         tf.summary.scalar("gp_loss", self.gradient_penalty)
 
         self.D_origin_loss = self.D_loss
-
-        self.D_loss += 10 * self.gradient_penalty
-        self.D_loss += 0.001 * tf.reduce_mean(tf.square(self.D_pro_logits - 0.0))
+        self.D_loss += self.lam_gp * self.gradient_penalty
+        self.D_loss += self.lam_eps * tf.reduce_mean(tf.square(self.D_pro_logits))
 
         self.log_vars.append(("generator_loss", self.G_loss))
         self.log_vars.append(("discriminator_loss", self.D_loss))
@@ -131,9 +132,9 @@ class PGGAN(object):
         step_pl = tf.placeholder(tf.float32, shape=None)
         alpha_tra_assign = self.alpha_tra.assign(step_pl / self.max_iters)
 
-        opti_D = tf.train.AdamOptimizer(learning_rate=self.learning_rate, beta1=0.0 , beta2=0.99).minimize(
+        opti_D = tf.train.AdamOptimizer(learning_rate=self.learning_rate, beta1=0.0, beta2=0.99).minimize(
             self.D_loss, var_list=self.d_vars)
-        opti_G = tf.train.AdamOptimizer(learning_rate=self.learning_rate, beta1=0.0 , beta2=0.99).minimize(
+        opti_G = tf.train.AdamOptimizer(learning_rate=self.learning_rate, beta1=0.0, beta2=0.99).minimize(
             self.G_loss, var_list=self.g_vars)
 
         init = tf.global_variables_initializer()
@@ -145,7 +146,6 @@ class PGGAN(object):
             sess.run(init)
             summary_op = tf.summary.merge_all()
             summary_writer = tf.summary.FileWriter(self.log_dir, sess.graph)
-
             if self.pg != 1 and self.pg != 7:
 
                 if self.trans:
@@ -161,7 +161,7 @@ class PGGAN(object):
 
                 # optimization D
                 n_critic = 1
-                if self.pg == 5 and self.trans:
+                if self.pg >= 5:
                     n_critic = 1
 
                 for i in range(n_critic):
@@ -174,8 +174,8 @@ class PGGAN(object):
 
                         alpha = np.float(step) / self.max_iters
 
-                        low_realbatch_array = scipy.ndimage.zoom(realbatch_array, zoom=[1,0.5,0.5,1])
-                        low_realbatch_array = scipy.ndimage.zoom(low_realbatch_array, zoom=[1, 2, 2, 1])
+                        low_realbatch_array = zoom(realbatch_array, zoom=[1, 0.5, 0.5, 1], mode='nearest')
+                        low_realbatch_array = zoom(low_realbatch_array, zoom=[1, 2, 2, 1], mode='nearest')
                         realbatch_array = alpha * realbatch_array + (1 - alpha) * low_realbatch_array
 
                     sess.run(opti_D, feed_dict={self.images: realbatch_array, self.z: sample_z})
@@ -185,6 +185,7 @@ class PGGAN(object):
                 sess.run(opti_G, feed_dict={self.z: sample_z})
 
                 summary_str = sess.run(summary_op, feed_dict={self.images: realbatch_array, self.z: sample_z})
+                summary_writer.add_summary(summary_str, step)
                 summary_writer.add_summary(summary_str, step)
                 # the alpha of fake_in process
                 sess.run(alpha_tra_assign, feed_dict={step_pl: step})
@@ -196,29 +197,28 @@ class PGGAN(object):
 
                     realbatch_array = np.clip(realbatch_array, -1, 1)
                     save_images(realbatch_array[0:self.batch_size], [2, self.batch_size/2],
-                                '{}/{:02d}_real.png'.format(self.sample_path, step))
+                                '{}/{:02d}_real.jpg'.format(self.sample_path, step))
 
                     if self.trans and self.pg != 0:
 
                         low_realbatch_array = np.clip(low_realbatch_array, -1, 1)
-
                         save_images(low_realbatch_array[0:self.batch_size], [2, self.batch_size / 2],
-                                    '{}/{:02d}_real_lower.png'.format(self.sample_path, step))
+                                    '{}/{:02d}_real_lower.jpg'.format(self.sample_path, step))
                    
                     fake_image = sess.run(self.fake_images,
                                           feed_dict={self.images: realbatch_array, self.z: sample_z})
                     fake_image = np.clip(fake_image, -1, 1)
-                    save_images(fake_image[0:self.batch_size], [2, self.batch_size/2], '{}/{:02d}_train.png'.format(self.sample_path, step))
+                    save_images(fake_image[0:self.batch_size], [2, self.batch_size/2], '{}/{:02d}_train.jpg'.format(self.sample_path, step))
 
                 if np.mod(step, 4000) == 0 and step != 0:
                     self.saver.save(sess, self.gan_model_path)
+
                 step += 1
 
             save_path = self.saver.save(sess, self.gan_model_path)
             print ("Model saved in file: %s" % save_path)
 
         tf.reset_default_graph()
-
 
     def discriminate(self, conv, reuse=False, pg=1, t=False, alpha_trans=0.01):
 
@@ -228,31 +228,32 @@ class PGGAN(object):
             if reuse == True:
                 scope.reuse_variables()
             if t:
-                conv_iden = avgpool2d(conv)
+                conv_iden = downscale2d(conv)
                 #from RGB
-                conv_iden = lrelu(conv2d(conv_iden, output_dim= self.get_nf(pg - 2), k_w=1, k_h=1, d_h=1, d_w=1,
+                conv_iden = lrelu(conv2d(conv_iden, output_dim= self.get_nf(pg - 2), k_w=1, k_h=1, d_h=1, d_w=1, use_wscale=self.use_wscale,
                            name='dis_y_rgb_conv_{}'.format(conv_iden.shape[1])))
             # fromRGB
-            conv = lrelu(conv2d(conv, output_dim=self.get_nf(pg - 1), k_w=1, k_h=1, d_w=1, d_h=1, name='dis_y_rgb_conv_{}'.format(conv.shape[1])))
+            conv = lrelu(conv2d(conv, output_dim=self.get_nf(pg - 1), k_w=1, k_h=1, d_w=1, d_h=1, use_wscale=self.use_wscale, name='dis_y_rgb_conv_{}'.format(conv.shape[1])))
+
             for i in range(pg - 1):
 
-                conv = lrelu(conv2d(conv, output_dim=self.get_nf(pg - 1 - i), d_h=1, d_w=1,
+                conv = lrelu(conv2d(conv, output_dim=self.get_nf(pg - 1 - i), d_h=1, d_w=1, use_wscale=self.use_wscale,
                                     name='dis_n_conv_1_{}'.format(conv.shape[1])))
-                conv = lrelu(conv2d(conv, output_dim=self.get_nf(pg - 2 - i), d_h=1, d_w=1,
+                conv = lrelu(conv2d(conv, output_dim=self.get_nf(pg - 2 - i), d_h=1, d_w=1, use_wscale=self.use_wscale,
                                                       name='dis_n_conv_2_{}'.format(conv.shape[1])))
-                conv = avgpool2d(conv, 2)
+                conv = downscale2d(conv)
                 if i == 0 and t:
                     conv = alpha_trans * conv + (1 - alpha_trans) * conv_iden
 
             conv = MinibatchstateConcat(conv)
             conv = lrelu(
-                conv2d(conv, output_dim=self.get_nf(1), k_w=3, k_h=3, d_h=1, d_w=1, name='dis_n_conv_1_{}'.format(conv.shape[1])))
+                conv2d(conv, output_dim=self.get_nf(1), k_w=3, k_h=3, d_h=1, d_w=1, use_wscale=self.use_wscale, name='dis_n_conv_1_{}'.format(conv.shape[1])))
             conv = lrelu(
-                conv2d(conv, output_dim=self.get_nf(1), k_w=4, k_h=4, d_h=1, d_w=1, padding='VALID', name='dis_n_conv_2_{}'.format(conv.shape[1])))
+                conv2d(conv, output_dim=self.get_nf(1), k_w=4, k_h=4, d_h=1, d_w=1, use_wscale=self.use_wscale, padding='VALID', name='dis_n_conv_2_{}'.format(conv.shape[1])))
             conv = tf.reshape(conv, [self.batch_size, -1])
 
             #for D
-            output = fully_connect(conv, output_size=1, scope='dis_n_fully')
+            output = fully_connect(conv, output_size=1, use_wscale=self.use_wscale, gain=1, name='dis_n_fully')
 
             return tf.nn.sigmoid(output), output
 
@@ -260,29 +261,29 @@ class PGGAN(object):
 
         with tf.variable_scope('generator') as scope:
 
-            de = tf.reshape(z_var, [self.batch_size, 1, 1, tf.cast(self.get_nf(1),tf.int32)])
-            de = conv2d(de, output_dim= self.get_nf(1), k_h=4, k_w=4, d_w=1, d_h=1, padding='Other', name='gen_n_1_conv')
+            de = tf.reshape(Pixl_Norm(z_var), [self.batch_size, 1, 1, int(self.get_nf(1))])
+            de = conv2d(de, output_dim=self.get_nf(1), k_h=4, k_w=4, d_w=1, d_h=1, use_wscale=self.use_wscale, gain=np.sqrt(2)/4, padding='Other', name='gen_n_1_conv')
             de = Pixl_Norm(lrelu(de))
-            de = tf.reshape(de, [self.batch_size, 4, 4, tf.cast(self.get_nf(1),tf.int32)])
-            de = conv2d(de, output_dim=self.get_nf(1), d_w=1, d_h=1, name='gen_n_2_conv')
+            de = tf.reshape(de, [self.batch_size, 4, 4, int(self.get_nf(1))])
+            de = conv2d(de, output_dim=self.get_nf(1), d_w=1, d_h=1, use_wscale=self.use_wscale, name='gen_n_2_conv')
             de = Pixl_Norm(lrelu(de))
 
             for i in range(pg - 1):
 
                 if i == pg - 2 and t:
                     #To RGB
-                    de_iden = conv2d(de, output_dim=3, k_w=1, k_h=1, d_w=1, d_h=1,
+                    de_iden = conv2d(de, output_dim=3, k_w=1, k_h=1, d_w=1, d_h=1, use_wscale=self.use_wscale,
                                      name='gen_y_rgb_conv_{}'.format(de.shape[1]))
                     de_iden = upscale(de_iden, 2)
 
                 de = upscale(de, 2)
                 de = Pixl_Norm(lrelu(
-                    conv2d(de, output_dim=self.get_nf(i + 1), d_w=1, d_h=1, name='gen_n_conv_1_{}'.format(de.shape[1]))))
+                    conv2d(de, output_dim=self.get_nf(i + 1), d_w=1, d_h=1, use_wscale=self.use_wscale, name='gen_n_conv_1_{}'.format(de.shape[1]))))
                 de = Pixl_Norm(lrelu(
-                    conv2d(de, output_dim=self.get_nf(i + 1), d_w=1, d_h=1, name='gen_n_conv_2_{}'.format(de.shape[1]))))
+                    conv2d(de, output_dim=self.get_nf(i + 1), d_w=1, d_h=1, use_wscale=self.use_wscale, name='gen_n_conv_2_{}'.format(de.shape[1]))))
 
             #To RGB
-            de = conv2d(de, output_dim=3, k_w=1, k_h=1, d_w=1, d_h=1, name='gen_y_rgb_conv_{}'.format(de.shape[1]))
+            de = conv2d(de, output_dim=3, k_w=1, k_h=1, d_w=1, d_h=1, use_wscale=self.use_wscale, gain=1, name='gen_y_rgb_conv_{}'.format(de.shape[1]))
 
             if pg == 1:
                 return de
