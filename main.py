@@ -17,7 +17,7 @@ flags.DEFINE_integer("max_iters", 40000, "Maxmization of training number")
 flags.DEFINE_float("learn_rate", 0.001, "Learning rate for G and D networks")
 flags.DEFINE_integer("lam_gp", 10, "Weight of gradient penalty term")
 flags.DEFINE_float("lam_eps", 0.001, "Weight for the epsilon term")
-flags.DEFINE_float("flag", 11, "FLAG of gan training process")
+flags.DEFINE_integer("flag", 11, "FLAG of gan training process")
 flags.DEFINE_boolean("use_wscale", True, "Using the scale of weight")
 
 FLAGS = flags.FLAGS
