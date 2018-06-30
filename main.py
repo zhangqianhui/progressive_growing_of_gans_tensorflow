@@ -10,7 +10,7 @@ os.environ['CUDA_VISIBLE_DEVICES']='0'
 
 flags.DEFINE_string("OPER_NAME", "Experiment_5_28_2", "the name of experiments")
 flags.DEFINE_integer("OPER_FLAG", 0, "Flag of opertion: 0 is for training ")
-flags.DEFINE_string("path" , '/?/celebA/', "Path of training data, for example /home/hehe/celebA/")
+flags.DEFINE_string("path" , '/home/jichao/dataset/celebA/', "Path of training data, for example /home/hehe/celebA/")
 flags.DEFINE_integer("batch_size", 16, "Batch size")
 flags.DEFINE_integer("sample_size", 512, "Size of sample")
 flags.DEFINE_integer("max_iters", 40000, "Maxmization of training number")
@@ -23,13 +23,10 @@ flags.DEFINE_boolean("use_wscale", True, "Using the scale of weight")
 FLAGS = flags.FLAGS
 if __name__ == "__main__":
 
-    root_log_dir = "./PGGanCeleba/logs/celeba_test2"
+    root_log_dir = "./output/{}/logs/".format(FLAGS.OPER_NAME)
     mkdir_p(root_log_dir)
-
     data_In = CelebA(FLAGS.path)
-
     print ("the num of dataset", len(data_In.image_list))
-
     if FLAGS.OPER_FLAG == 0:
 
         fl = [1,2,2,3,3,4,4,5,5, 6, 6]
@@ -38,11 +35,11 @@ if __name__ == "__main__":
         for i in range(FLAGS.flag):
 
             t = False if (i % 2 == 0) else True
-            pggan_checkpoint_dir_write = "./PGGanCeleba{}/model_pggan_{}/{}/".format(FLAGS.OPER_NAME, FLAGS.OPER_FLAG, fl[i])
-            sample_path = "./PGGanCeleba{}/{}/sample_{}_{}".format(FLAGS.OPER_NAME, FLAGS.OPER_FLAG, fl[i], t)
+            pggan_checkpoint_dir_write = "./output/{}/model_pggan_{}/{}/".format(FLAGS.OPER_NAME, FLAGS.OPER_FLAG, fl[i])
+            sample_path = "./output/{}/{}/sample_{}_{}".format(FLAGS.OPER_NAME, FLAGS.OPER_FLAG, fl[i], t)
             mkdir_p(pggan_checkpoint_dir_write)
             mkdir_p(sample_path)
-            pggan_checkpoint_dir_read = "./PGGanCeleba{}/model_pggan_{}/{}/".format(FLAGS.OPER_NAME, FLAGS.OPER_FLAG, r_fl[i])
+            pggan_checkpoint_dir_read = "./output/{}/model_pggan_{}/{}/".format(FLAGS.OPER_NAME, FLAGS.OPER_FLAG, r_fl[i])
 
             pggan = PGGAN(batch_size=FLAGS.batch_size, max_iters=FLAGS.max_iters,
                             model_path=pggan_checkpoint_dir_write, read_model_path=pggan_checkpoint_dir_read,
