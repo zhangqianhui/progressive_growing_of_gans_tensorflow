@@ -10,7 +10,7 @@ os.environ['CUDA_VISIBLE_DEVICES']='0'
 
 flags.DEFINE_string("OPER_NAME", "Experiment_5_28_2", "the name of experiments")
 flags.DEFINE_integer("OPER_FLAG", 0, "Flag of opertion: 0 is for training ")
-flags.DEFINE_string("path" , '/home/jichao/dataset/celebA/', "Path of training data, for example /home/hehe/celebA/")
+flags.DEFINE_string("path" , '/home/?/dataset/celebA/', "Path of training data, for example /home/hehe/celebA/")
 flags.DEFINE_integer("batch_size", 16, "Batch size")
 flags.DEFINE_integer("sample_size", 512, "Size of sample")
 flags.DEFINE_integer("max_iters", 40000, "Maxmization of training number")
