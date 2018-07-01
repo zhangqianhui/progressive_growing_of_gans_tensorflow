@@ -36,7 +36,7 @@ and unzip CelebA into a directory. Noted that this directory don't contain the s
 python main.py --path your data-path
 ```
 
-## Results
+## Results on celebA dataset
 Here is the generated 64x64 results of PGGAN-tensorflow(Left: generated; Right: Real):
 
 <p align="center">
