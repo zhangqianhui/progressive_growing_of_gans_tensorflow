@@ -274,14 +274,9 @@ class PGGAN(object):
             #To RGB
             de = conv2d(de, output_dim=3, k_w=1, k_h=1, d_w=1, d_h=1, use_wscale=self.use_wscale, gain=1, name='gen_y_rgb_conv_{}'.format(de.shape[1]))
 
-            if pg == 1:
-                return de
-
-            if t:
-                de = (1 - alpha_trans) * de_iden + alpha_trans*de
-
-            else:
-                de = de
+            if pg == 1: return de
+            if t: de = (1 - alpha_trans) * de_iden + alpha_trans*de
+            else: de = de
 
             return de
 
