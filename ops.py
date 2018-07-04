@@ -28,7 +28,6 @@ def conv2d(input_, output_dim,
         w = tf.cast(w, input_.dtype)
 
         if padding == 'Other':
-
             padding = 'VALID'
             input_ = tf.pad(input_, [[0,0], [3, 3], [3, 3], [0, 0]], "CONSTANT")
 
@@ -46,7 +45,6 @@ def conv2d(input_, output_dim,
             return conv
 
 def fully_connect(input_, output_size, gain=np.sqrt(2), use_wscale=False, name=None, with_w=False):
-
   shape = input_.get_shape().as_list()
   with tf.variable_scope(name or "Linear"):
 
@@ -63,7 +61,6 @@ def fully_connect(input_, output_size, gain=np.sqrt(2), use_wscale=False, name=N
         return output
 
 def conv_cond_concat(x, y):
-    """Concatenate conditioning vector on feature map axis."""
     x_shapes = x.get_shape()
     y_shapes = y.get_shape()
     return tf.concat(3 , [x , y*tf.ones([x_shapes[0], x_shapes[1], x_shapes[2] , y_shapes[3]])])
@@ -76,7 +73,6 @@ def resize_nearest_neighbor(x, new_size):
     return x
 
 def upscale(x, scale):
-
     _, h, w, _ = get_conv_shape(x)
     return resize_nearest_neighbor(x, (h * scale, w * scale))
 
@@ -94,7 +90,6 @@ def downscale2d(x, k=2):
                           padding='VALID')
 
 def Pixl_Norm(x, eps=1e-8):
-
     if len(x.shape) > 2:
         axis_ = 3
     else:
@@ -103,7 +98,6 @@ def Pixl_Norm(x, eps=1e-8):
         return x * tf.rsqrt(tf.reduce_mean(tf.square(x), axis=axis_, keep_dims=True) + eps)
 
 def MinibatchstateConcat(input, averaging='all'):
-
     s = input.shape
     adjusted_std = lambda x, **kwargs: tf.sqrt(tf.reduce_mean((x - tf.reduce_mean(x, **kwargs)) **2, **kwargs) + 1e-8)
     vals = adjusted_std(input, axis=0, keep_dims=True)

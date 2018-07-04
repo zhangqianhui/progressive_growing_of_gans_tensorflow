@@ -1,7 +1,6 @@
 import tensorflow as tf
 from ops import lrelu, conv2d, fully_connect, upscale, Pixl_Norm, downscale2d, MinibatchstateConcat
 from utils import save_images
-from utils import CelebA
 import numpy as np
 from scipy.ndimage.interpolation import zoom
 
@@ -9,8 +8,7 @@ class PGGAN(object):
 
     # build model
     def __init__(self, batch_size, max_iters, model_path, read_model_path, data, sample_size, sample_path, log_dir,
-                 learn_rate, lam_gp, lam_eps, PG, t, use_wscale):
-
+                 learn_rate, lam_gp, lam_eps, PG, t, use_wscale, is_celeba):
         self.batch_size = batch_size
         self.max_iters = max_iters
         self.gan_model_path = model_path
@@ -28,12 +26,12 @@ class PGGAN(object):
         self.channel = self.data_In.channel
         self.output_size = 4 * pow(2, PG - 1)
         self.use_wscale = use_wscale
+        self.is_celeba = is_celeba
         self.images = tf.placeholder(tf.float32, [batch_size, self.output_size, self.output_size, self.channel])
         self.z = tf.placeholder(tf.float32, [self.batch_size, self.sample_size])
         self.alpha_tra = tf.Variable(initial_value=0.0, trainable=False,name='alpha_tra')
 
     def build_model_PGGan(self):
-
         self.fake_images = self.generate(self.z, pg=self.pg, t=self.trans, alpha_trans=self.alpha_tra)
         _, self.D_pro_logits = self.discriminate(self.images, reuse=False, pg = self.pg, t=self.trans, alpha_trans=self.alpha_tra)
         _, self.G_pro_logits = self.discriminate(self.fake_images, reuse=True,pg= self.pg, t=self.trans, alpha_trans=self.alpha_tra)
@@ -49,7 +47,7 @@ class PGGAN(object):
         _, discri_logits= self.discriminate(interpolates, reuse=True, pg=self.pg, t=self.trans, alpha_trans=self.alpha_tra)
         gradients = tf.gradients(discri_logits, [interpolates])[0]
 
-        ##2 norm
+        # 2 norm
         slopes = tf.sqrt(tf.reduce_sum(tf.square(gradients), reduction_indices=[1, 2, 3]))
         self.gradient_penalty = tf.reduce_mean((slopes - 1.) ** 2)
         tf.summary.scalar("gp_loss", self.gradient_penalty)
@@ -128,7 +126,6 @@ class PGGAN(object):
 
     # do train
     def train(self):
-
         step_pl = tf.placeholder(tf.float32, shape=None)
         alpha_tra_assign = self.alpha_tra.assign(step_pl / self.max_iters)
 
@@ -142,12 +139,10 @@ class PGGAN(object):
         config.gpu_options.allow_growth = True
 
         with tf.Session(config=config) as sess:
-
             sess.run(init)
             summary_op = tf.summary.merge_all()
             summary_writer = tf.summary.FileWriter(self.log_dir, sess.graph)
             if self.pg != 1 and self.pg != 7:
-
                 if self.trans:
                     self.r_saver.restore(sess, self.read_model_path)
                     self.rgb_saver.restore(sess, self.read_model_path)
@@ -158,22 +153,22 @@ class PGGAN(object):
             step = 0
             batch_num = 0
             while step <= self.max_iters:
-
                 # optimization D
                 n_critic = 1
                 if self.pg >= 5:
                     n_critic = 1
 
                 for i in range(n_critic):
-
                     sample_z = np.random.normal(size=[self.batch_size, self.sample_size])
-                    train_list = self.data_In.getNextBatch(batch_num, self.batch_size)
-                    realbatch_array = CelebA.getShapeForData(train_list, resize_w=self.output_size)
+                    if self.is_celeba:
+                        train_list = self.data_In.getNextBatch(batch_num, self.batch_size)
+                        realbatch_array = self.data_In.getShapeForData(train_list, resize_w=self.output_size)
+                    else:
+                        realbatch_array = self.data_In.getNextBatch(self.batch_size, resize_w=self.output_size)
+                        realbatch_array = np.transpose(realbatch_array, axes=[0, 3, 2, 1]).transpose([0, 2, 1, 3])
 
                     if self.trans and self.pg != 0:
-
                         alpha = np.float(step) / self.max_iters
-
                         low_realbatch_array = zoom(realbatch_array, zoom=[1, 0.5, 0.5, 1], mode='nearest')
                         low_realbatch_array = zoom(low_realbatch_array, zoom=[1, 2, 2, 1], mode='nearest')
                         realbatch_array = alpha * realbatch_array + (1 - alpha) * low_realbatch_array
@@ -191,7 +186,6 @@ class PGGAN(object):
                 sess.run(alpha_tra_assign, feed_dict={step_pl: step})
 
                 if step % 400 == 0:
-
                     D_loss, G_loss, D_origin_loss, alpha_tra = sess.run([self.D_loss, self.G_loss, self.D_origin_loss,self.alpha_tra], feed_dict={self.images: realbatch_array, self.z: sample_z})
                     print("PG %d, step %d: D loss=%.7f G loss=%.7f, D_or loss=%.7f, opt_alpha_tra=%.7f" % (self.pg, step, D_loss, G_loss, D_origin_loss, alpha_tra))
 
@@ -200,7 +194,6 @@ class PGGAN(object):
                                 '{}/{:02d}_real.jpg'.format(self.sample_path, step))
 
                     if self.trans and self.pg != 0:
-
                         low_realbatch_array = np.clip(low_realbatch_array, -1, 1)
                         save_images(low_realbatch_array[0:self.batch_size], [2, self.batch_size / 2],
                                     '{}/{:02d}_real_lower.jpg'.format(self.sample_path, step))
@@ -221,7 +214,6 @@ class PGGAN(object):
         tf.reset_default_graph()
 
     def discriminate(self, conv, reuse=False, pg=1, t=False, alpha_trans=0.01):
-
         #dis_as_v = []
         with tf.variable_scope("discriminator") as scope:
 
@@ -236,7 +228,6 @@ class PGGAN(object):
             conv = lrelu(conv2d(conv, output_dim=self.get_nf(pg - 1), k_w=1, k_h=1, d_w=1, d_h=1, use_wscale=self.use_wscale, name='dis_y_rgb_conv_{}'.format(conv.shape[1])))
 
             for i in range(pg - 1):
-
                 conv = lrelu(conv2d(conv, output_dim=self.get_nf(pg - 1 - i), d_h=1, d_w=1, use_wscale=self.use_wscale,
                                     name='dis_n_conv_1_{}'.format(conv.shape[1])))
                 conv = lrelu(conv2d(conv, output_dim=self.get_nf(pg - 2 - i), d_h=1, d_w=1, use_wscale=self.use_wscale,
@@ -258,7 +249,6 @@ class PGGAN(object):
             return tf.nn.sigmoid(output), output
 
     def generate(self, z_var, pg=1, t=False, alpha_trans=0.0):
-
         with tf.variable_scope('generator') as scope:
 
             de = tf.reshape(Pixl_Norm(z_var), [self.batch_size, 1, 1, int(self.get_nf(1))])
@@ -269,7 +259,6 @@ class PGGAN(object):
             de = Pixl_Norm(lrelu(de))
 
             for i in range(pg - 1):
-
                 if i == pg - 2 and t:
                     #To RGB
                     de_iden = conv2d(de, output_dim=3, k_w=1, k_h=1, d_w=1, d_h=1, use_wscale=self.use_wscale,
