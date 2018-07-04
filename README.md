@@ -9,8 +9,6 @@ the Tensorflow implementation of [PROGRESSIVE GROWING OF GANS FOR IMPROVED QUALI
 
 ## Differences with the original paper.
 
-- This implement use CelebA dataset, not CelebA-HQ.
-
 - Recently, just generate 64x64 and 128x128 pixels samples.
 
 ## Setup
@@ -31,9 +29,18 @@ cd progressive_growing_of_gans_tensorflow
 You can download the [CelebA dataset](https://www.dropbox.com/sh/8oqt9vytwxb3s4r/AAB06FXaQRUNtjW9ntaoPGvCa?dl=0) 
 and unzip CelebA into a directory. Noted that this directory don't contain the sub-directory.
 
-- Train the model
+- The method for creating CelebA-HQ can be found on [Method](https://github.com/github-pengge/PyTorch-progressive_growing_of_gans#how-to-create-celeba-hq-dataset)
+
+- Train the model on CelebA dataset
+
 ```bash
-python main.py --path your data-path
+python main.py --path=your celeba data-path --celeba=True
+```
+
+- Train the model on CelebA-HQ dataset
+
+```bash
+python main.py --path=your celeba-hq data-path --celeba=False
 ```
 
 ## Results on celebA dataset
@@ -46,6 +53,19 @@ Here is the generated 64x64 results of PGGAN-tensorflow(Left: generated; Right: 
 Here is the generated 128x128 results of PGGAN-tensorflow(Left: generated; Right: Real):
 <p align="center">
   <img src="/images/sample_128.png">
+</p>
+
+
+## Results on CelebA-HQ dataset
+Here is the generated 64x64 results of PGGAN-tensorflow(Left: generated; Right: Real):
+
+<p align="center">
+  <img src="/images/hs_sample_64.jpg">
+</p>
+
+Here is the generated 128x128 results of PGGAN-tensorflow(Left: generated; Right: Real):
+<p align="center">
+  <img src="/images/hs_sample_128.jpg">
 </p>
 
 ## Issue
