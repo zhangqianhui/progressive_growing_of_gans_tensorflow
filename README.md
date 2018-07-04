@@ -44,26 +44,26 @@ python main.py --path=your celeba-hq data-path --celeba=False
 ```
 
 ## Results on celebA dataset
-Here is the generated 64x64 results of PGGAN-tensorflow(Left: generated; Right: Real):
+Here is the generated 64x64 results(Left: generated; Right: Real):
 
 <p align="center">
   <img src="/images/sample.png">
 </p>
 
-Here is the generated 128x128 results of PGGAN-tensorflow(Left: generated; Right: Real):
+Here is the generated 128x128 results(Left: generated; Right: Real):
 <p align="center">
   <img src="/images/sample_128.png">
 </p>
 
 
 ## Results on CelebA-HQ dataset
-Here is the generated 64x64 results of PGGAN-tensorflow(Left: generated; Right: Real):
+Here is the generated 64x64 results(Left: generated; Right: Real):
 
 <p align="center">
   <img src="/images/hs_sample_64.jpg">
 </p>
 
-Here is the generated 128x128 results of PGGAN-tensorflow(Left: generated; Right: Real):
+Here is the generated 128x128 results(Left: generated; Right: Real):
 <p align="center">
   <img src="/images/hs_sample_128.jpg">
 </p>
