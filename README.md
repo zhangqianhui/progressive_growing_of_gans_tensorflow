@@ -57,13 +57,13 @@ Here is the generated 128x128 results(Left: generated; Right: Real):
 
 
 ## Results on CelebA-HQ dataset
-Here is the generated 64x64 results(Left: generated; Right: Real):
+Here is the generated 64x64 results(Left: Real; Right: Generated):
 
 <p align="center">
   <img src="/images/hs_sample_64.jpg">
 </p>
 
-Here is the generated 128x128 results(Left: generated; Right: Real):
+Here is the generated 128x128 results(Left: Real; Right: Generated):
 <p align="center">
   <img src="/images/hs_sample_128.jpg">
 </p>
