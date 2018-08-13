@@ -282,10 +282,7 @@ class PGGAN(object):
 
     def get_nf(self, stage):
         return min(1024 / (2 **(stage * 1)), 512)
-
-    def get_fp(self, pg):
-        return max(512 / (2 **(pg - 1)), 16)
-
+    
     def sample_z(self, mu, log_var):
         eps = tf.random_normal(shape=tf.shape(mu))
         return mu + tf.exp(log_var / 2) * eps
